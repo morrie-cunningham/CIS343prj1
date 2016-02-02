@@ -201,7 +201,7 @@ void fillInMineCountForNonMineCells(int size, Cell board[][size])
 int nbrOfMines(int size, Cell board[][size])
 {
 	int count = 0;
-	
+
 	// TO DO
 
 	return count;
@@ -216,7 +216,7 @@ int getNbrNeighborMines(int row, int col, int size, Cell board[][size])
 	int count = 0;
 
 	// TO DO
-	
+
 	return count;
 }
 
@@ -227,7 +227,65 @@ int getNbrNeighborMines(int row, int col, int size, Cell board[][size])
  ************************************************************************/
 void displayBoard(int size, Cell board[][size], bool displayMines)
 {
-	// TO DO
+	printf("\n");
+	int i, j;
+	for(i = 0; i <= size + 1; i++) {
+		for(j = 0; j <= size + 1; j++) {
+			char *cell;
+			if (i == 0){
+				if (j == 0 || j == 1){
+					cell = " ";
+				} else {
+					char str[4];
+					sprintf(str, "%d", j-1);
+					cell = str;
+				}
+			} else if (i == 1) {
+				if (j == 0){
+					cell = " ";
+				} else if (j == 1){
+					cell = "  ┌";
+				} else {
+					cell = "───";
+				}
+			} else {
+				if (j == 0){
+					char str[4];
+					sprintf(str, "%d", i-1);
+					cell = str;
+				} else if (j == 1) {
+					cell = "  │";
+				} else {
+
+					// board[i][j].is_mine = false;
+					// board[i][j].mines = 0;
+					// board[i][j].visible = false;
+
+					if (board[i-2][j-2].visible) {
+						if (board[i-2][j-2].is_mine) {
+							cell = "*";
+						} else {
+							char str[4];
+							sprintf(str, "%d", board[i-2][j-2].mines);
+							cell = str;
+						}
+					} else {
+						if (displayMines && board[i-2][j-2].is_mine) {
+							cell = "*";
+						} else {
+							cell = "?";
+						}
+					}
+				}
+			}
+			printf("%3s",cell);
+
+			if (j == size + 1) {
+				printf("\n");
+			}
+		}
+	}
+	printf("\n");
 }
 
 /************************************************************************
@@ -240,11 +298,11 @@ int getBoardSize()
 	int size = 10;
 
 	while(1) {
-		printf("Enter the board size (5 .. 15): ");
+		printf("Enter the board size (%d .. %d): ", BOARD_SIZE_MIN, BOARD_SIZE_MAX);
 		scanf("%d", &size);
 
-		if(size < 5 || size > 15)
-			printf("Please enter an integer between 5 and 15!\n");
+		if(size < BOARD_SIZE_MIN || size > BOARD_SIZE_MAX)
+			printf("Please enter an integer between %d and %d!\n", BOARD_SIZE_MIN, BOARD_SIZE_MAX);
 		else{
 			break;
 		}
@@ -263,11 +321,10 @@ int getPercentMines()
 	int percent = 0;
 
 	while(1) {
-		printf("Enter the percentage of mines on the board (10 .. 70): ");
+		printf("Enter the percentage of mines on the board (%d .. %d): ", PCT_MINES_MIN, PCT_MINES_MAX);
 		scanf("%d",&percent);
-
-		if(percent < 10 || percent > 70)
-			printf("Please enter an integer between 10 and 70!\n");
+		if(percent < PCT_MINES_MIN || percent > PCT_MINES_MAX)
+			printf("Please enter an integer between %d and %d!\n", PCT_MINES_MIN, PCT_MINES_MAX);
 		else{
 			break;
 		}
@@ -281,8 +338,7 @@ int getPercentMines()
  ************************************************************************/
 Status selectCell(int row, int col, int size, Cell board[][size])
 {
-	// TO DO
-
+	board[row][col].visible = true;
 	return INPROGRESS;
 }
 
@@ -294,7 +350,7 @@ int nbrVisibleCells(int size, Cell board[][size])
 	int count = 0;
 
 	// TO DO
-	
+
 	return count;
 }
 
@@ -317,4 +373,3 @@ void setAllNeighborCellsVisible(int row, int col, int size, Cell board[][size])
 {
 	// TO DO
 }
-
