@@ -209,9 +209,15 @@ void fillInMineCountForNonMineCells(int size, Cell board[][size])
  ************************************************************************/
 int nbrOfMines(int size, Cell board[][size])
 {
-	int count = 0;
+	int count = 0, i, j;
 
-	// TO DO
+	for(i = 0; i <= size; i++) {
+		for(j = 0; j <= size; j++) {
+			if (board[i][j].is_mine() == true) {
+				count++;
+			}
+		}
+	}
 
 	return count;
 }
