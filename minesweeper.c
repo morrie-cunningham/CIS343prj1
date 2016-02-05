@@ -213,7 +213,7 @@ int nbrOfMines(int size, Cell board[][size])
 
 	for(i = 0; i <= size; i++) {
 		for(j = 0; j <= size; j++) {
-			if (board[i][j].is_mine() == true) {
+			if (board[i][j].is_mine == true) {
 				count++;
 			}
 		}
@@ -264,7 +264,6 @@ void displayBoard(int size, Cell board[][size], bool displayMines)
 					cell = "───";
 				}
 			} else {
-				printf("B");
 				if (j == 0){
 
 					char str[3];
