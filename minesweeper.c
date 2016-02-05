@@ -183,7 +183,16 @@ void initBoard(int size, Cell board[][size])
  ************************************************************************/
 void placeMinesOnBoard(int size, Cell board[][size], int nbrMines)
 {
-	// TO DO
+	srand((unsigned)time(NULL));
+	int i = 0;
+	while (i < nbrMines) {
+		int row = rand() % size;
+		int col = rand() % size;
+		if (!board[row][col].is_mine) {
+			board[row][col].is_mine = true;
+			i++;
+		}
+	}
 }
 
 /************************************************************************
@@ -236,7 +245,7 @@ void displayBoard(int size, Cell board[][size], bool displayMines)
 				if (j == 0 || j == 1){
 					cell = " ";
 				} else {
-					char str[4];
+					char str[3];
 					sprintf(str, "%d", j-1);
 					cell = str;
 				}
@@ -249,23 +258,20 @@ void displayBoard(int size, Cell board[][size], bool displayMines)
 					cell = "───";
 				}
 			} else {
+				printf("B");
 				if (j == 0){
-					char str[4];
+
+					char str[3];
 					sprintf(str, "%d", i-1);
 					cell = str;
 				} else if (j == 1) {
 					cell = "  │";
 				} else {
-
-					// board[i][j].is_mine = false;
-					// board[i][j].mines = 0;
-					// board[i][j].visible = false;
-
 					if (board[i-2][j-2].visible) {
 						if (board[i-2][j-2].is_mine) {
 							cell = "*";
 						} else {
-							char str[4];
+							char str[3];
 							sprintf(str, "%d", board[i-2][j-2].mines);
 							cell = str;
 						}
@@ -279,7 +285,6 @@ void displayBoard(int size, Cell board[][size], bool displayMines)
 				}
 			}
 			printf("%3s",cell);
-
 			if (j == size + 1) {
 				printf("\n");
 			}
