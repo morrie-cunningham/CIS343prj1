@@ -68,6 +68,7 @@ int main()
 	Status gameState = INPROGRESS;
 
 	printf("!!!!!WELCOME TO THE MINESWEEPER GAME!!!!!\n\n");
+
 	size = getBoardSize();
 
 	// declare 2D array of cells
@@ -135,10 +136,10 @@ int main()
 
 		// display appropriate message if the game is over
 		if (gameState == WON) {
-			printf("You found all the mines. Congratulations. Bye.");
+			printf("You found all the mines. Congratulations. Bye.\n");
 			return 0;
 		} else if (gameState == LOST) {
-			printf("Oops. Sorry, you landed on a mine. Bye");
+			printf("Oops. Sorry, you landed on a mine. Bye\n");
 			return 0;
 		}
 	}
@@ -169,8 +170,8 @@ void displayMenu()
 void initBoard(int size, Cell board[][size])
 {
 	int i, j;
-	for(i = 0; i <= size; i++) {
-		for(j = 0; j <= size; j++) {
+	for(i = 0; i < size; i++) {
+		for(j = 0; j < size; j++) {
 			board[i][j].is_mine = false;
 			board[i][j].mines = 0;
 			board[i][j].visible = false;
@@ -201,7 +202,26 @@ void placeMinesOnBoard(int size, Cell board[][size], int nbrMines)
  ************************************************************************/
 void fillInMineCountForNonMineCells(int size, Cell board[][size])
 {
-	// TO DO
+	int i, j;
+	for(i = 0; i < size; i++) {
+		for(j = 0; j < size; j++) {
+			if (!board[i][j].is_mine){
+				int mines = 0;
+				int offsets[] = {-1, 0, 1};
+				int offsetsLen = sizeof(offsets)/sizeof(offsets[0]);
+				for (int x = 0; x < offsetsLen; x++){
+					for (int y = 0; y < offsetsLen; y++){
+						bool xIsValid = i+offsets[x] >= 0 && i+offsets[x] < size;
+						bool yIsValid = j+offsets[y] >= 0 && j+offsets[y] < size;
+						if (xIsValid && yIsValid){
+							if (board[i+offsets[x]][j+offsets[y]].is_mine){ mines++; }
+						}
+					}
+				}
+				board[i][j].mines = mines;
+			}
+		}
+	}
 }
 
 /************************************************************************
@@ -284,6 +304,11 @@ void displayBoard(int size, Cell board[][size], bool displayMines)
 						if (displayMines && board[i-2][j-2].is_mine) {
 							cell = "*";
 						} else {
+							// DEBUG
+							// char str[3];
+							// sprintf(str, "%d", board[i-2][j-2].mines);
+							// cell = str;
+
 							cell = "?";
 						}
 					}
@@ -349,6 +374,12 @@ int getPercentMines()
 Status selectCell(int row, int col, int size, Cell board[][size])
 {
 	board[row][col].visible = true;
+	if (board[row][col].is_mine) {
+		return LOST;
+	}
+
+	// TODO: If no more cells available then return WON;
+
 	return INPROGRESS;
 }
 
