@@ -11,7 +11,7 @@
 
 #define BOARD_SIZE_MIN 5
 #define BOARD_SIZE_MAX 15
-#define PCT_MINES_MIN 10
+#define PCT_MINES_MIN 1
 #define PCT_MINES_MAX 70
 
 typedef struct {
@@ -213,9 +213,9 @@ void fillInMineCountForNonMineCells(int size, Cell board[][size])
 					for (int y = 0; y < offsetsLen; y++){
 						bool xIsValid = i+offsets[x] >= 0 && i+offsets[x] < size;
 						bool yIsValid = j+offsets[y] >= 0 && j+offsets[y] < size;
-						if (xIsValid && yIsValid){
-							if (board[i+offsets[x]][j+offsets[y]].is_mine){ mines++; }
-						}
+						bool isNotSelf = !(offsets[x] == 0 && offsets[y] == 0);
+						bool isMine = board[i+offsets[x]][j+offsets[y]].is_mine;
+						if (xIsValid && yIsValid && isNotSelf && isMine){ mines++; }
 					}
 				}
 				board[i][j].mines = mines;
@@ -374,11 +374,24 @@ int getPercentMines()
 Status selectCell(int row, int col, int size, Cell board[][size])
 {
 	board[row][col].visible = true;
+
+	// setImmediateNeighborCellsVisible(row, col, size, board);
+
+	setAllNeighborCellsVisible(row, col, size, board);
+
 	if (board[row][col].is_mine) {
 		return LOST;
 	}
 
-	// TODO: If no more cells available then return WON;
+	int visibleCells = nbrVisibleCells(size,board);
+	int mines = nbrOfMines(size,board);
+
+	printf("visibleCells %d\n", visibleCells);
+	printf("mines %d\n", mines);
+
+	if( visibleCells + mines == size * size){
+		return WON;
+	}
 
 	return INPROGRESS;
 }
@@ -390,7 +403,12 @@ int nbrVisibleCells(int size, Cell board[][size])
 {
 	int count = 0;
 
-	// TO DO
+	int i, j;
+	for(i = 0; i < size; i++) {
+		for(j = 0; j < size; j++) {
+			if (board[i][j].visible && !board[i][j].is_mine) { count++; };
+		}
+	}
 
 	return count;
 }
@@ -401,7 +419,22 @@ int nbrVisibleCells(int size, Cell board[][size])
  ************************************************************************/
 void setImmediateNeighborCellsVisible(int row, int col, int size, Cell board[][size])
 {
-	// TO DO
+	if (!board[row][col].is_mine){
+		int offsets[] = {-1, 0, 1};
+		int offsetsLen = sizeof(offsets)/sizeof(offsets[0]);
+		for (int x = 0; x < offsetsLen; x++){
+			for (int y = 0; y < offsetsLen; y++){
+				bool xIsValid = row+offsets[x] >= 0 && row+offsets[x] < size;
+				bool yIsValid = col+offsets[y] >= 0 && col+offsets[y] < size;
+				bool isNotSelf = !(offsets[x] == 0 && offsets[y] == 0);
+				bool isZero = board[row+offsets[x]][col+offsets[y]].mines == 0;
+				bool isNotVisible = board[row+offsets[x]][col+offsets[y]].visible == false;
+				if (xIsValid && yIsValid && isNotSelf && isZero && isNotVisible){
+					board[row+offsets[x]][col+offsets[y]].visible = true;
+				}
+			}
+		}
+	}
 }
 
 /************************************************************************
@@ -412,5 +445,21 @@ void setImmediateNeighborCellsVisible(int row, int col, int size, Cell board[][s
  ************************************************************************/
 void setAllNeighborCellsVisible(int row, int col, int size, Cell board[][size])
 {
-	// TO DO
+	if (!board[row][col].is_mine){
+		int offsets[] = {-1, 0, 1};
+		int offsetsLen = sizeof(offsets)/sizeof(offsets[0]);
+		for (int x = 0; x < offsetsLen; x++){
+			for (int y = 0; y < offsetsLen; y++){
+				bool xIsValid = row+offsets[x] >= 0 && row+offsets[x] < size;
+				bool yIsValid = col+offsets[y] >= 0 && col+offsets[y] < size;
+				bool isNotSelf = !(offsets[x] == 0 && offsets[y] == 0);
+				bool isZero = board[row+offsets[x]][col+offsets[y]].mines == 0;
+				bool isNotVisible = board[row+offsets[x]][col+offsets[y]].visible == false;
+				if (xIsValid && yIsValid && isNotSelf && isZero && isNotVisible){
+					board[row+offsets[x]][col+offsets[y]].visible = true;
+					setAllNeighborCellsVisible(row+offsets[x], col+offsets[y], size, board);
+				}
+			}
+		}
+	}
 }
