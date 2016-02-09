@@ -11,7 +11,7 @@
 
 #define BOARD_SIZE_MIN 5
 #define BOARD_SIZE_MAX 15
-#define PCT_MINES_MIN 1
+#define PCT_MINES_MIN 10
 #define PCT_MINES_MAX 70
 
 typedef struct {
@@ -89,8 +89,8 @@ int main()
 
 	while (true) {
 		printf("Enter command (m/M for command menu): ");
-		scanf("%c",&command);
-		command = getchar();
+		scanf(" %c",&command);
+		getchar();
 
 		switch (command) {
 			case 'm': case 'M':
@@ -217,8 +217,8 @@ int nbrOfMines(int size, Cell board[][size])
 {
 	int count = 0, i, j;
 
-	for(i = 0; i <= size; i++) {
-		for(j = 0; j <= size; j++) {
+	for(i = 0; i < size; i++) {
+		for(j = 0; j < size; j++) {
 			if (board[i][j].is_mine == true) {
 				count++;
 			}
@@ -244,13 +244,13 @@ int getNbrNeighborMines(int row, int col, int size, Cell board[][size])
 				bool yIsValid = col+offsets[y] >= 0 && col+offsets[y] < size;
 				bool isNotSelf = !(offsets[x] == 0 && offsets[y] == 0);
 				bool isMine = board[row+offsets[x]][col+offsets[y]].is_mine;
-				if (xIsValid && yIsValid && isNotSelf && isMine){ 
-					mines++; 
+				if (xIsValid && yIsValid && isNotSelf && isMine){
+					mines++;
 				}
 			}
 		}
 	}
-	return mines; 
+	return mines;
 }
 
 /************************************************************************
@@ -262,34 +262,51 @@ void displayBoard(int size, Cell board[][size], bool displayMines)
 {
 	printf("\n");
 	int i, j;
-	for(i = 0; i <= size + 1; i++) {
-		for(j = 0; j <= size + 1; j++) {
+	for(i = 0; i <= size + 2; i++) {
+		for(j = 0; j <= size + 2; j++) {
 			char *cell;
-			if (i == 0){
-				if (j == 0 || j == 1){
+			if (i == 0){ // first row
+				if (j == 0 || j == 1){ // first col
 					cell = " ";
-				} else {
+				} else if (j == 1){ // second col
+					cell = " ";
+				} else if (j == size + 2) { // last col
+					cell = " ";
+				} else { // any other col
 					char str[3];
 					sprintf(str, "%d", j-1);
 					cell = str;
 				}
-			} else if (i == 1) {
-				if (j == 0){
+			} else if (i == 1) { // second row
+				if (j == 0){ // first col
 					cell = " ";
-				} else if (j == 1){
+				} else if (j == 1){ // second col
 					cell = "  ┌";
-				} else {
+				} else if (j == size + 2) { // last col
+					cell = "──┐";
+				} else { // any other col
 					cell = "───";
 				}
-			} else {
-				if (j == 0){
-
+			} else if (i == size + 2) { // last row
+				if (j == 0) { // first col
+					cell = " ";
+				} else if (j == 1) { // second col
+					cell = "  └";
+				} else if (j == size + 2) { // last col
+					cell = "──┘";
+				} else { // any other col
+					cell = "───";
+				}
+			} else { // any other row
+				if (j == 0){ // first col
 					char str[3];
 					sprintf(str, "%d", i-1);
 					cell = str;
-				} else if (j == 1) {
+				} else if (j == 1) { // second col
 					cell = "  │";
-				} else {
+				} else if (j == size + 2) { // last col
+					cell = "  │";
+				} else { // any other col
 					if (board[i-2][j-2].visible) {
 						if (board[i-2][j-2].is_mine) {
 							cell = "*";
@@ -298,22 +315,19 @@ void displayBoard(int size, Cell board[][size], bool displayMines)
 							sprintf(str, "%d", board[i-2][j-2].mines);
 							cell = str;
 						}
+					} else if (i == size + 2) {
+						cell = "│  ";
 					} else {
 						if (displayMines && board[i-2][j-2].is_mine) {
 							cell = "*";
 						} else {
-							// DEBUG
-							// char str[3];
-							// sprintf(str, "%d", board[i-2][j-2].mines);
-							// cell = str;
-
 							cell = "?";
 						}
 					}
 				}
 			}
 			printf("%3s",cell);
-			if (j == size + 1) {
+			if (j == size + 2) {
 				printf("\n");
 			}
 		}
@@ -383,11 +397,9 @@ Status selectCell(int row, int col, int size, Cell board[][size])
 
 	int visibleCells = nbrVisibleCells(size,board);
 	int mines = nbrOfMines(size,board);
+	int totalCells = size * size;
 
-	printf("visibleCells %d\n", visibleCells);
-	printf("mines %d\n", mines);
-
-	if( visibleCells + mines == size * size){
+	if( visibleCells + mines >= totalCells){
 		return WON;
 	}
 
@@ -427,7 +439,8 @@ void setImmediateNeighborCellsVisible(int row, int col, int size, Cell board[][s
 				bool isNotSelf = !(offsets[x] == 0 && offsets[y] == 0);
 				bool isZero = board[row+offsets[x]][col+offsets[y]].mines == 0;
 				bool isNotVisible = board[row+offsets[x]][col+offsets[y]].visible == false;
-				if (xIsValid && yIsValid && isNotSelf && isZero && isNotVisible){
+				bool isNotMine = board[row+offsets[x]][col+offsets[y]].is_mine == false;
+				if (xIsValid && yIsValid && isNotSelf && isZero && isNotVisible && isNotMine){
 					board[row+offsets[x]][col+offsets[y]].visible = true;
 				}
 			}
@@ -453,7 +466,8 @@ void setAllNeighborCellsVisible(int row, int col, int size, Cell board[][size])
 				bool isNotSelf = !(offsets[x] == 0 && offsets[y] == 0);
 				bool isZero = board[row+offsets[x]][col+offsets[y]].mines == 0;
 				bool isNotVisible = board[row+offsets[x]][col+offsets[y]].visible == false;
-				if (xIsValid && yIsValid && isNotSelf && isZero && isNotVisible){
+				bool isNotMine = board[row+offsets[x]][col+offsets[y]].is_mine == false;
+				if (xIsValid && yIsValid && isNotSelf && isZero && isNotVisible && isNotMine){
 					board[row+offsets[x]][col+offsets[y]].visible = true;
 					setAllNeighborCellsVisible(row+offsets[x], col+offsets[y], size, board);
 				}
