@@ -205,21 +205,7 @@ void fillInMineCountForNonMineCells(int size, Cell board[][size])
 	int i, j;
 	for(i = 0; i < size; i++) {
 		for(j = 0; j < size; j++) {
-			if (!board[i][j].is_mine){
-				int mines = 0;
-				int offsets[] = {-1, 0, 1};
-				int offsetsLen = sizeof(offsets)/sizeof(offsets[0]);
-				for (int x = 0; x < offsetsLen; x++){
-					for (int y = 0; y < offsetsLen; y++){
-						bool xIsValid = i+offsets[x] >= 0 && i+offsets[x] < size;
-						bool yIsValid = j+offsets[y] >= 0 && j+offsets[y] < size;
-						bool isNotSelf = !(offsets[x] == 0 && offsets[y] == 0);
-						bool isMine = board[i+offsets[x]][j+offsets[y]].is_mine;
-						if (xIsValid && yIsValid && isNotSelf && isMine){ mines++; }
-					}
-				}
-				board[i][j].mines = mines;
-			}
+			board[i][j].mines = getNbrNeighborMines(i,j, size, board);
 		}
 	}
 }
@@ -248,11 +234,23 @@ int nbrOfMines(int size, Cell board[][size])
  ************************************************************************/
 int getNbrNeighborMines(int row, int col, int size, Cell board[][size])
 {
-	int count = 0;
-
-	// TO DO
-
-	return count;
+	int mines = 0;
+	if (!board[row][col].is_mine){
+		int offsets[] = {-1, 0, 1};
+		int offsetsLen = sizeof(offsets)/sizeof(offsets[0]);
+		for (int x = 0; x < offsetsLen; x++){
+			for (int y = 0; y < offsetsLen; y++){
+				bool xIsValid = row+offsets[x] >= 0 && row+offsets[x] < size;
+				bool yIsValid = col+offsets[y] >= 0 && col+offsets[y] < size;
+				bool isNotSelf = !(offsets[x] == 0 && offsets[y] == 0);
+				bool isMine = board[row+offsets[x]][col+offsets[y]].is_mine;
+				if (xIsValid && yIsValid && isNotSelf && isMine){ 
+					mines++; 
+				}
+			}
+		}
+	}
+	return mines; 
 }
 
 /************************************************************************
